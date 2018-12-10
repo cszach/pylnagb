@@ -20,6 +20,6 @@ License
 As stated above, the module is intended for educational purposes, and that's
 why we believe it is best to release `pylnagb` into the Public Domain.
 
-Licensed under [The Unlicense](unlicense.org). A copy of the license is
+Licensed under [The Unlicense](http://unlicense.org). A copy of the license is
 included in the repository (see [UNLICENSE](UNLICENSE)).
 
