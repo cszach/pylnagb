@@ -3,64 +3,55 @@
 # This is free and unencumbered software released into the public domain.
 # For more information, please refer to <http://unlicense.org>
 
-from math import *
-
-# Vectors shall be represented by Python arrays of numbers.
-# Matrices shall be represented by arrays of arrays of numbers.
+import vectorutils
 
 
-def __d_sin(x):
-    """
-    Return sine of x degrees
+class Vector:
+    def __init__(self, coord1, coord2, coord3=None, dim=2, cartesian=True):
+        """
+        Initiate a Vector object
 
-    :param x: Angle
-    :return: Sine of x in degrees
-    """
-    return sin(radians(x))
+        :param coord1: First coordinate (Cartesian: x ; Polar: r)
+        :param coord2: Second coordinate (Cartesian: y ; Polar: azimuthal angle)
+        :param coord3: Third coordinate (Cartesian: z ; Polar: polar angle)
+        :param dim: Number of dimensions (either 2 or 3)
+        :param cartesian: Are the coordinates Cartesian or Polar?
+        """
+        self.coord1 = coord1
+        self.coord2 = coord2
+        self.coord3 = coord3
+        self.__dim = dim
+        if coord3 is not None: self.__dim = 3
+        elif dim == 3: self.coord3 = 0
+        self.__is_cartesian = cartesian
+        self.__vrepr = [coord1, coord2] if self.__dim == 2 else \
+                       [coord1, coord2, coord3]
 
+    def __repr__(self):
+        return "[%.10f, %.10f%s]" %\
+               (self.coord1, self.coord2,
+                ", %.10f" % self.coord3 if self.__dim == 3 else "")
 
-def __d_cos(x):
-    """
-    Return cosine of x degrees.
+    def to_cartes(self):
+        """
+        Convert self to Cartesian coordinates if the current coordinates are
+        Polar coordinates
 
-    :param x: Angle
-    :return: Cosine of x in degrees
-    """
-    return cos(radians(x))
+        :return:
+        """
+        if self.__is_cartesian is False:
+            cvect = vectorutils.rec(self.__vrepr)
+            self.coord1 = cvect[0]
+            self.coord2 = cvect[1]
+            self.coord3 = cvect[2] if self.__dim == 3 else None
 
-
-def rec2(vector):
-    """
-    Given a vector expressed in 2D Polar coordinates, return the equivalence
-    in Cartesian coordinates.
-
-    :param vector: 2D vector with Polar coordinates
-    :return: Equivalence of input vector in Cartesian coordinates
-    """
-    try:
-        if len(vector) != 2:
-            return []
-    except TypeError:
-        return []
-    return [vector[0] * round(__d_cos(vector[1]), 10),
-            vector[0] * round(__d_sin(vector[1]), 10)]
-
-
-def pol2(vector):
-    """
-    Given a vector expressed in 2D Cartesian coordinates, return the equivalence
-    in Polar coordinates.
-
-    :param vector: 2D vector with Cartesian coordinates
-    :return: Equivalence of input vector in Polar coordinates
-    """
-    try:
-        if len(vector) != 2:
-            return []
-    except TypeError:
-        return []
-    if vector[0] != 0:
-        ang = degrees(atan(vector[1] / vector[0]))
-    else:
-        ang = 90 if vector[1] > 0 else -90
-    return [sqrt(vector[0] ** 2 + vector[1] ** 2), ang]
+    def to_polar(self):
+        if self.__is_cartesian is True:
+            cvect = vectorutils.pol(self.__vrepr)
+            self.coord1 = cvect[0]
+            self.coord2 = cvect[1]
+            if self.__dim == 2:
+                self.coord3 = None
+            else:
+                self.coord3 = cvect[2]
+            # self.coord3 = None if self.__dim == 2 else cvect[2]
