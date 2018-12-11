@@ -59,5 +59,8 @@ def pol2(vector):
             return []
     except TypeError:
         return []
-    return [sqrt(vector[0] ** 2 + vector[1] ** 2),
-            degrees(atan(vector[1] / vector[0])) if vector[0] != 0 else 90]
+    if vector[0] != 0:
+        ang = degrees(atan(vector[1] / vector[0]))
+    else:
+        ang = 90 if vector[1] > 0 else -90
+    return [sqrt(vector[0] ** 2 + vector[1] ** 2), ang]
