@@ -3,7 +3,7 @@
 # This is free and unencumbered software released into the public domain.
 # For more information, please refer to <http://unlicense.org>
 
-import vectorutils
+import vectorutils as vct
 
 
 class Vector:
@@ -25,24 +25,53 @@ class Vector:
         elif dim == 3: self.coord3 = 0
         self.__is_cartesian = cartesian
 
-        # Vector as represented by an array
-        self.__vrepr = [coord1, coord2] if self.__dim == 2 else \
-                       [coord1, coord2, coord3]
-
     def __repr__(self):
+        """
+        Text representation of vector _self_. Vector's elements are put between
+        a pair of square brackets and are separated by a colon.
+
+        :return: String representation of self
+        """
         return "[%.10f, %.10f%s]" %\
                (self.coord1, self.coord2,
                 ", %.10f" % self.coord3 if self.__dim == 3 else "")
+
+    def vrepr(self):
+        """
+        Array representation for the vector _self_.
+
+        :return: The array representation of self.
+        """
+        return [self.coord1, self.coord2] if self.__dim == 2 else \
+               [self.coord1, self.coord2, self.coord3]
+
+    def update_coord(self, newvector, cartesian = None):
+        """
+        Update the coordinates of self vector to match those of newvector. If
+        newvector has a different coordinate system, convert it to self's
+        coordinate system before matching.
+
+        :param newvector: New vector whose coordinates self should correspond to
+        :param cartesian: Is newvector in Cartesian coordinates?
+        :return: void
+        """
+        if cartesian is not None and cartesian != self.__is_cartesian:
+            newvector = vct.rec(newvector) if self.__is_cartesian \
+                else vct.pol(newvector)
+        self.coord1 = newvector[0]
+        self.coord2 = newvector[1]
+        self.coord3 = None if len(newvector) == 2 else newvector[2]
+        self.__dim = 2 if len(newvector) == 2 else 3
 
     def to_cartes(self):
         """
         Convert self to Cartesian coordinates if the current coordinates are
         Polar.
 
-        :return:
+        :return: void
         """
         if self.__is_cartesian is False:
-            cvect = vectorutils.rec(self.__vrepr)
+            cvect = vct.rec(self.vrepr())
             self.coord1 = cvect[0]
             self.coord2 = cvect[1]
             self.coord3 = None if self.__dim == 2 else cvect[2]
@@ -52,10 +81,10 @@ class Vector:
         Convert self to Polar coordinates if the current coordinates are
         Cartesian.
 
-        :return:
+        :return: void
         """
         if self.__is_cartesian is True:
-            cvect = vectorutils.pol(self.__vrepr)
+            cvect = vct.pol(self.vrepr())
             self.coord1 = cvect[0]
             self.coord2 = cvect[1]
             self.coord3 = None if self.__dim == 2 else cvect[2]
