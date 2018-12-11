@@ -24,6 +24,8 @@ class Vector:
         if coord3 is not None: self.__dim = 3
         elif dim == 3: self.coord3 = 0
         self.__is_cartesian = cartesian
+
+        # Vector as represented by an array
         self.__vrepr = [coord1, coord2] if self.__dim == 2 else \
                        [coord1, coord2, coord3]
 
@@ -35,7 +37,7 @@ class Vector:
     def to_cartes(self):
         """
         Convert self to Cartesian coordinates if the current coordinates are
-        Polar coordinates
+        Polar.
 
         :return:
         """
@@ -43,15 +45,17 @@ class Vector:
             cvect = vectorutils.rec(self.__vrepr)
             self.coord1 = cvect[0]
             self.coord2 = cvect[1]
-            self.coord3 = cvect[2] if self.__dim == 3 else None
+            self.coord3 = None if self.__dim == 2 else cvect[2]
 
     def to_polar(self):
+        """
+        Convert self to Polar coordinates if the current coordinates are
+        Cartesian.
+
+        :return:
+        """
         if self.__is_cartesian is True:
             cvect = vectorutils.pol(self.__vrepr)
             self.coord1 = cvect[0]
             self.coord2 = cvect[1]
-            if self.__dim == 2:
-                self.coord3 = None
-            else:
-                self.coord3 = cvect[2]
-            # self.coord3 = None if self.__dim == 2 else cvect[2]
+            self.coord3 = None if self.__dim == 2 else cvect[2]
