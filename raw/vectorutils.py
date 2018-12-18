@@ -1,3 +1,15 @@
+"""
+vectorutils.py - Vector operations implemented for raw representation of vectors
+which are Python lists or tuples or any iterable that works with len() and
+numeric indexing. The operations work with 2D and 3D vectors only. Vectors in
+other dimensional spaces are not supported.
+
+The same operations but are implemented to work with objects of class Vector
+are defined in the Vector class (see /assets/vector.py).
+
+This is free and unencumbered software released into the public domain.
+For more information, please refer to <http://unlicense.org>
+"""
 from math import sqrt, degrees, cos, sin, acos, atan, radians
 
 
@@ -24,13 +36,18 @@ def rec(vector):
         return []
 
 
-def pol(vector):
+def pol(vector, physics=False):
     """
     Given a vector expressed in Cartesian coordinates, return the equivalence in
-    Polar coordinates.
+    Polar coordinates. For 3D vectors, return them in spherical coordinates,
+    using the one often used in mathematics (not physics): azimuthal angle
+    'theta' and polar angle 'phi'. If using the one often used in physics is
+    interested, that can be done by setting the parameter 'physics' to True.
 
     :param vector: Vector with Cartesian coordinates
-    :return: Equivalence of input vector in Polar coordinates
+    :param physics: True if the output needs to be in physics's spherical
+    coordinates (default: False); only used in conversions of 3D vectors
+    :return: Equivalence of input vector in Polar/Spherical coordinates
     """
     try:
         if len(vector) == 2:
@@ -45,8 +62,29 @@ def pol(vector):
                 azimuth = degrees(atan(vector[1] / vector[0]))
             else:
                 azimuth = 90 if vector[1] > 0 else -90
-            return [r, azimuth, degrees(acos(vector[2] / r))]
+            inclination = degrees(acos(vector[2] / r))
+            if physics:
+                # Return the result in spherical coordinates often used in
+                # Physics
+                return [r, inclination, azimuth]
+            else:
+                # Return the result in spherical coordinates often used in
+                # Mathematics: The azimuth and inclination are swapped
+                return [r, azimuth, inclination]
         else:
             return []
     except ValueError:
         return []
+
+
+def add(*args):
+    """
+    Add vectors. The process involves converting both vectors to Cartesian
+    coordinates (if necessary), add them, and then convert both vectors back
+    to their original coordinate system.
+
+    :param args: Vectors to add
+    :return: Result of adding
+    """
+
+
