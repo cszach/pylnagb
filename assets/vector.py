@@ -34,11 +34,9 @@ class Vector:
 
         :return: String representation of self
         """
-        return "[%.10f, %.10f%s]" %\
-               (self.coord1, self.coord2,
-                ", %.10f" % self.coord3 if self.__dim == 3 else "")
+        return self.list_repr().__repr__()
 
-    def vrepr(self):
+    def list_repr(self):
         """
         Array representation for the vector _self_.
 
@@ -78,7 +76,7 @@ class Vector:
         :return: void
         """
         if newvector.__class__.__name__ == "Vector":
-            self.update_coord(newvector.vrepr(), newvector.__is_cartesian, updnew=False)
+            self.update_coord(newvector.list_repr(), newvector.__is_cartesian, updnew=False)
 
     def to_cartes(self):
         """
@@ -89,7 +87,7 @@ class Vector:
         """
         if self.__is_cartesian is False:
             self.__is_cartesian = True
-            self.update_coord(vct.rec(self.vrepr()))
+            self.update_coord(vct.rec(self.list_repr()))
 
     def to_polar(self):
         """
@@ -100,19 +98,4 @@ class Vector:
         """
         if self.__is_cartesian is True:
             self.__is_cartesian = False
-            self.update_coord(vct.pol(self.vrepr()))
-
-    def add(self, vector):
-        """
-
-        :param vector:
-        :return:
-         """
-        if vector.__dim != self.__dim:
-            raise DimensionError("Cannot perform operations on vectors of different dimensional spaces")
-        else:
-            vector = vector.to_cartes()
-            self.coord1 += vector.coord1
-            self.coord2 += vector.coord2
-            if self.coord3 is not None:
-                self.coord3 += vector.coord3
+            self.update_coord(vct.pol(self.list_repr()))
