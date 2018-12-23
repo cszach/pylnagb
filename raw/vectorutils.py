@@ -10,8 +10,11 @@ are defined in the Vector class (see /assets/vector.py).
 This is free and unencumbered software released into the public domain.
 For more information, please refer to <http://unlicense.org>
 """
+import sys
+sys.path.insert(0, "../sys")
 from math import sqrt, degrees, cos, sin, acos, atan, radians
 from collections import Iterable
+from linagb_error import *
 
 
 def validate_vector(obj, throwerr=False):
@@ -33,6 +36,18 @@ def validate_vector(obj, throwerr=False):
         return False
 
 
+def two_to_three(vector_2):
+    """
+    Convert a 2D Cartesian coordinated vector to a 3D Cartesian coordinated
+    vector by setting z = 0.
+
+    :param vector_2: Input vector.
+    :return: Converted vector.
+    """
+    if validate_vector(vector_2):
+        return vector_2 if len(vector_2) == 3 else vector_2 + [0]
+
+
 def rec(vector, physics=False):
     """
     Given a vector expressed in Polar/Spherical coordinates, return the
@@ -46,7 +61,7 @@ def rec(vector, physics=False):
     list if the given object as parameter vector is not an acceptable vector
     representation.
     """
-    if not validate_vector(vector, True):
+    if not validate_vector(vector):
         return []
 
     if len(vector) == 2:
@@ -76,7 +91,7 @@ def pol(vector, physics=False):
     Python list if the value for parameter vector is not a valid vector
     representation.
     """
-    if not validate_vector(vector, True):
+    if not validate_vector(vector):
         return []
 
     if len(vector) == 2:
@@ -102,3 +117,42 @@ def pol(vector, physics=False):
             return [r, azimuth, inclination]
 
 
+def add_cartes(*args, fixdim=False):
+    """
+    Add multiple vectors. The coordinates are assumed to be Cartesian. If
+    vectors of different dimensions are given, by default the function will
+    raise a DimensionError and return an empty Python list. This behavior can be
+    disabled by setting parameter fixdim to True (it is False by default).
+    A coordinate is added in the case of converting a 2D vector to a 3D one,
+    and is removed in the opposite case. All 3D vectors will be converted to 2D
+    vectors if the first vector given in the parameters is 2D and vice versa.
+
+    :param args: Vectors to add
+    :param fixdim: Fix mismatch of dimensions? (True if yes)
+    :return: Result of adding. If only one vector is given, return that same
+    vector. If any error occurs (mismatch dimensions, object not valid,...),
+    an error is raised and an empty list ( [] ) is returned.
+    """
+    try:
+        if len(args) == 1:
+            if validate_vector(args[0], True):
+                return args[0]
+        else:
+            if validate_vector(args[0], True):
+                base_dim = len(args[0])
+
+            result = [0, 0] if base_dim == 2 else [0, 0, 0]
+
+            for v in args:
+                if validate_vector(v, True):
+                    if len(v) != base_dim and not fixdim:
+                        raise DimensionError()
+
+                    result[0] += v[0]
+                    result[1] += v[1]
+                    if base_dim == len(v) == 3:
+                        result[2] += v[2]
+
+        return result
+    except (TypeError, DimensionError):
+        return []
