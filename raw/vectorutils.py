@@ -11,29 +11,54 @@ This is free and unencumbered software released into the public domain.
 For more information, please refer to <http://unlicense.org>
 """
 from math import sqrt, degrees, cos, sin, acos, atan, radians
+from collections import Iterable
 
 
-def rec(vector):
+def validate_vector(obj, throwerr=False):
     """
-    Given a vector expressed in Polar coordinates, return the equivalence
-    in Cartesian coordinates. Works for 2D or 3D vectors.
+    Given an object obj, check if it is iterable or otherwise will work with
+    the operations implemented in this Python code file.
 
-    :param vector: Vector with Polar coordinates
-    :return: Equivalence of input vector in Cartesian coordinates
+    :param obj: Test subject
+    :param throwerr: Raise an error if the check returns false.
+    :return: True if obj is a valid raw representation of mathematical vectors,
+    False otherwise
     """
-    try:
-        sin_lat = sin(radians(vector[1]))
-        cos_lat = round(cos(radians(vector[1])))
-        if len(vector) == 2:
-            return [vector[0] * cos_lat,
-                    vector[0] * round(sin_lat, 10)]
-        elif len(vector) == 3:
-            return [vector[0] * round(sin_lat * cos(radians(vector[2])), 10),
-                    vector[0] * round(sin_lat * sin(radians(vector[2])), 10),
-                    vector[0] * cos_lat]
-        else: return []
-    except ValueError:
+    if isinstance(obj, Iterable) and type(obj) is not str and 1 < len(obj) < 4:
+        return True
+    else:
+        if throwerr:
+            raise TypeError("A given object is not an accepted representation"
+                            " of a vector")
+        return False
+
+
+def rec(vector, physics=False):
+    """
+    Given a vector expressed in Polar/Spherical coordinates, return the
+    equivalence in Cartesian coordinates. If the vector is given in the
+    spherical coordinates often used in physics, set parameter physics to True.
+
+    :param vector: Vector with Polar or Spherical coordinates
+    :param physics: True if the given vector is given in physics's Spherical
+    coordinates, False (default) otherwise.
+    :return: Equivalence of input vector in Cartesian coordinates. Empty Python
+    list if the given object as parameter vector is not an acceptable vector
+    representation.
+    """
+    if not validate_vector(vector, True):
         return []
+
+    if len(vector) == 2:
+        return [vector[0] * cos(radians(vector[1])),
+                vector[0] * sin(radians(vector[1]))]
+    else:
+        inclin = vector[1] if physics else vector[2]
+        azimuth = vector[2] if physics else vector[1]
+
+        return [vector[0] * sin(radians(inclin)) * cos(radians(azimuth)),
+                vector[0] * sin(radians(inclin)) * sin(radians(azimuth)),
+                vector[0] * cos(radians(inclin))]
 
 
 def pol(vector, physics=False):
@@ -47,44 +72,33 @@ def pol(vector, physics=False):
     :param vector: Vector with Cartesian coordinates
     :param physics: True if the output needs to be in physics's spherical
     coordinates (default: False); only used in conversions of 3D vectors
-    :return: Equivalence of input vector in Polar/Spherical coordinates
+    :return: Equivalence of input vector in Polar/Spherical coordinates. Empty
+    Python list if the value for parameter vector is not a valid vector
+    representation.
     """
-    try:
-        if len(vector) == 2:
-            if vector[0] == 0:
-                ang = 90 if vector[1] > 0 else -90
-            else:
-                ang = degrees(atan(vector[1] / vector[0]))
-            return [sqrt(vector[0] ** 2 + vector[1] ** 2), ang]
-        elif len(vector) == 3:
-            r = sqrt(vector[0] ** 2 + vector[1] ** 2 + vector[2] ** 2)
-            if vector[0] != 0:
-                azimuth = degrees(atan(vector[1] / vector[0]))
-            else:
-                azimuth = 90 if vector[1] > 0 else -90
-            inclination = degrees(acos(vector[2] / r))
-            if physics:
-                # Return the result in spherical coordinates often used in
-                # Physics
-                return [r, inclination, azimuth]
-            else:
-                # Return the result in spherical coordinates often used in
-                # Mathematics: The azimuth and inclination are swapped
-                return [r, azimuth, inclination]
-        else:
-            return []
-    except ValueError:
+    if not validate_vector(vector, True):
         return []
 
-
-def add(*args):
-    """
-    Add vectors. The process involves converting both vectors to Cartesian
-    coordinates (if necessary), add them, and then convert both vectors back
-    to their original coordinate system.
-
-    :param args: Vectors to add
-    :return: Result of adding
-    """
+    if len(vector) == 2:
+        if vector[0] == 0:
+            ang = 90 if vector[1] > 0 else -90
+        else:
+            ang = degrees(atan(vector[1] / vector[0]))
+        return [sqrt(vector[0] ** 2 + vector[1] ** 2), ang]
+    else:
+        r = sqrt(vector[0] ** 2 + vector[1] ** 2 + vector[2] ** 2)
+        if vector[0] != 0:
+            azimuth = degrees(atan(vector[1] / vector[0]))
+        else:
+            azimuth = 90 if vector[1] > 0 else -90
+        inclination = degrees(acos(vector[2] / r))
+        if physics:
+            # Return the result in spherical coordinates often used in
+            # Physics
+            return [r, inclination, azimuth]
+        else:
+            # Return the result in spherical coordinates often used in
+            # Mathematics: The azimuth and inclination are swapped
+            return [r, azimuth, inclination]
 
 
