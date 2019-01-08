@@ -7,7 +7,6 @@ This module implements point and line as classes and ignores planes.
 """
 
 from numbers import Number
-import equ
 
 
 class Point:

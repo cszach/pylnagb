@@ -57,6 +57,7 @@ class SysLinEquation:
                     self.equs.append(i)
                 else:
                     break
+
     def __repr__(self):
         result = ""
         for i in self.equs:
