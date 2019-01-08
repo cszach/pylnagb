@@ -5,27 +5,38 @@ This is free and unencumbered software released into the public domain.
 For more information, please refer to <http://unlicense.org>
 """
 from raw import vectorutils as vct
-from sys.lnagb_errors import DimensionError
+from sys import path as syspath
+from coordsys import *
+syspath.insert(0, "../sys")
+from linagb_error import *
+from numbers import Number
 
 
 class Vector:
-    def __init__(self, coord1, coord2, coord3=None, dim=2, cartesian=True):
+    def __init__(self, c1, c2, c3=None, dim=2, coordsys=Cartesian):
         """
         Initiate a Vector object
 
-        :param coord1: First coordinate (Cartesian: x ; Polar: r)
-        :param coord2: Second coordinate (Cartesian: y ; Polar: azimuthal angle)
-        :param coord3: Third coordinate (Cartesian: z ; Polar: polar angle)
+        :param c1: First coordinate (Cartesian: x ; Polar: r)
+        :param c2: Second coordinate (Cartesian: y ; Polar: azimuthal/polar angle)
+        :param c3: Third coordinate (Cartesian: z ; Polar: polar/azimuthal angle)
         :param dim: Number of dimensions (either 2 or 3)
-        :param cartesian: Are the coordinates Cartesian or Polar?
+        :param coordsys: Coordinate system of the coordinates
         """
-        self.coord1 = coord1
-        self.coord2 = coord2
-        self.coord3 = coord3
+        if not isinstance(c1, Number) or not isinstance(c2, Number) \
+                or (not isinstance(c3, Number) and c3 is not None):
+            raise TypeError("Input coordinate(s) is/are invalid")
+        if not isinstance(dim, int) or isinstance(dim, bool):
+            raise TypeError("Input dimension is invalid")
+        if dim < 2 or dim > 3:
+            raise TypeError("Module only supports 2-dimensional and 3-dimensional vectors")
+        self.c1 = c1
+        self.c2 = c2
+        self.c3 = c3
         self.__dim = dim
-        if coord3 is not None: self.__dim = 3
-        elif dim == 3: self.coord3 = 0
-        self.__is_cartesian = cartesian
+        if dim == 2: self.c3 = None
+        if dim == 3 and self.c3 is None: self.c3 = 0
+        self.__coordsys = coordsys
 
     def __repr__(self):
         """
@@ -34,7 +45,8 @@ class Vector:
 
         :return: String representation of self
         """
-        return self.list_repr().__repr__()
+        return "%s in %s" % \
+               (self.list_repr().__repr__(), self.__coordsys.__repr__())
 
     def list_repr(self):
         """
