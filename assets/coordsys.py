@@ -12,15 +12,30 @@ class CoordSys:
     """
     Coordinate system prototype.
     """
-    def __init__(self, dimension):
-        """
-        :param dimension: Dimension of the coordinate system
-        """
+    def __init__(self):
         self.ORIGIN = undefinedterms.Point("O", 0, 0)
-        self.dimension = dimension
 
 
-CARTES = CoordSys(2)
-CARTES_3 = CoordSys(3)
-POLAR = CoordSys(2)
-SPHERICAL = CoordSys(3)
+class Cartesian(CoordSys):
+    def __repr__():
+        return "2-dimensional Cartesian coordinates system"
+
+
+class Cartesian_3(CoordSys):
+    def __repr__():
+        return "3-dimensional Cartesian coordinates system"
+
+
+class Polar(CoordSys):
+    def __repr__():
+        return "Polar coordinates system"
+
+
+class PhySpherical(CoordSys):
+    def __repr__():
+        return "Spherical coordinates system (in Physics)"
+
+
+class MathSpherical(CoordSys):
+    def __repr__():
+        return "Spherical coordinates system (in Mathematics)"
