@@ -30,13 +30,24 @@ class Vector:
             raise TypeError("Input dimension is invalid")
         if dim < 2 or dim > 3:
             raise TypeError("Module only supports 2-dimensional and 3-dimensional vectors")
+        if coordsys not in (Cartesian, Cartesian_3, Polar, PhySpherical, MathSpherical):
+            raise TypeError("Invalid coordinate system")
         self.c1 = c1
         self.c2 = c2
         self.c3 = c3
         self.__dim = dim
-        if dim == 2: self.c3 = None
-        if dim == 3 and self.c3 is None: self.c3 = 0
-        self.__coordsys = coordsys
+        if dim == 2:
+            self.c3 = None
+            if coordsys == Cartesian_3:
+                self.__coordsys = Cartesian
+            elif coordsys in (MathSpherical, PhySpherical):
+                self.__coordsys = Polar
+        if dim == 3:
+            if self.c3 is None: self.c3 = 0
+            if coordsys == Cartesian:
+                self.__coordsys = Cartesian_3
+            elif coordsys == Polar:
+                self.__coordsys = MathSpherical
 
     def __repr__(self):
         """
@@ -46,9 +57,9 @@ class Vector:
         :return: String representation of self
         """
         return "%s in %s" % \
-               (self.list_repr().__repr__(), self.__coordsys.__repr__())
+               (self.lrepr().__repr__(), self.__coordsys.__repr__())
 
-    def list_repr(self):
+    def lrepr(self):
         """
         Array representation for the vector _self_.
 
@@ -57,57 +68,71 @@ class Vector:
         return [self.coord1, self.coord2] if self.__dim == 2 else \
                [self.coord1, self.coord2, self.coord3]
 
-    def update_coord(self, newvector, cartesian=None, updnew=True):
+    def update_coord(self, newvector, coordsys, conv_new_vct=True):
         """
-        Update the coordinates of self vector to match those of newvector.
+        Update the coordinates of self to match those of newvector.
 
-        :param newvector: New vector whose coordinates self should correspond to
-        :param cartesian: Is newvector in Cartesian coordinates?
-        :param updnew: If newvector is in a different coordinate system, and
-        updnew is True, convert newvector to self's coordinate system,
-        otherwise convert self to newvector's coordinate system
+        :param newvector: New vector (in raw representation) whose coordinates
+        self should correspond to
+        :param coordsts: Coordinates system used by newvector
+        :param conv_new_vct: If True, use self's coordinate system for the
+        updated vector, otherwise use newvector's (coordsys)
         :return: void
         """
-        if cartesian is not None and cartesian != self.__is_cartesian and updnew:
-            newvector = vct.rec(newvector) if self.__is_cartesian \
-                else vct.pol(newvector)
-        self.coord1 = newvector[0]
-        self.coord2 = newvector[1]
-        self.coord3 = None if len(newvector) == 2 else newvector[2]
-        self.__dim = 2 if len(newvector) == 2 else 3
-        if cartesian is not None and cartesian != self.__is_cartesian and not updnew:
-            self.__is_cartesian = cartesian
+        vct.validate_vector(newvector, True)
+        if coordsys not in (Cartesian, Cartesian_3, Polar, PhySpherical, MathSpherical):
+            raise TypeError("Invalid coordinate system")
+        if not isinstance(conv_new_vct, bool):
+            raise TypeError
+
+        if conv_new_vct and coordsys != self.__coordsys:
+            if self.__coordsys in (Cartesian, Cartesian_3):
+                newvector = vct.rec(newvector, coordsys == PhySpherical)
+            if self.__coordsys in (PhySpherical, MathSpherical):
+                newvector = vct.pol(newvector, self.__coordsys == PhySpherical)
+
+        self.c1 = newvector[0]
+        self.c2 = newvector[1]
+        self.c3 = None if len(newvector) == 2 else newvector[2]
+
+        if not conv_new_vct:
+            self.__coordsys = coordsys
 
     def copy(self, newvector):
         """
         Make self the same as newvector. This function is basically the same
         as Vector.update_coord(), but accepts a Vector class object instead of
-        an array.
+        a Python list.
 
         :param newvector: A Vector object
         :return: void
         """
-        if newvector.__class__.__name__ == "Vector":
-            self.update_coord(newvector.list_repr(), newvector.__is_cartesian, updnew=False)
+        if isinstance(newvector, Vector):
+            self.update_coord(newvector.lrepr(), newvector.__coordsys, False)
+        else:
+            raise TypeError("Input must be an instance of Vector")
 
     def to_cartes(self):
         """
         Convert self to Cartesian coordinates if the current coordinates are
-        Polar.
+        Polar/Spherical.
 
         :return: void
         """
-        if self.__is_cartesian is False:
-            self.__is_cartesian = True
+        if self.__coordsys in (Polar, PhySpherical, MathSpherical):
+            self.__coordsys = Cartesian if self.__coordsys == Polar else Cartesian_3
             self.update_coord(vct.rec(self.list_repr()))
 
-    def to_polar(self):
+    def to_polar(self, physics=False):
         """
-        Convert self to Polar coordinates if the current coordinates are
-        Cartesian.
+        Convert self to Polar/Spherical coordinates if the current coordinates
+        are Cartesian.
 
+        :param physics: If True: Convert to Physic's Spherical coordinates,
+        otherwise convert to Mathematics's Spherical coordinates
         :return: void
         """
-        if self.__is_cartesian is True:
-            self.__is_cartesian = False
+        if self.__coordsys in (Cartesian, Cartesian_3):
+            self.__coordsys = Polar if self.__coordsys == Cartesian \
+                else PhySpherical if physics else MathSpherical
             self.update_coord(vct.pol(self.list_repr()))
